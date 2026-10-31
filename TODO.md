@@ -13,14 +13,18 @@ Open work for the adaptive sidebar layout. Details and measurements live in [the
   - [ ] iPhone, Duo folded and unfolded
   - [ ] iOS/iPadOS 17, 18, 26 and 27
 - [ ] **Sidebar surface.** The layout should accept any sidebar content, so it shouldn't force a list style. Give the sidebar column its background from the layout itself, and offer an *optional* helper that gives a `List` the native sidebar look (no white card). Today the demo's list falls back to the card style because nothing tells it it's in a sidebar.
+- [ ] **Unfolded Duo: remove the rail's 84-point inset inside the sidebar.** UIKit adds it to the sidebar's navigation stack content even though the column is nowhere near the rail; also get the 20-point fold clearance into the UIKit-hosted stacks. Native's split view sets its columns' insets itself. See step 3c in the notes.
+- [ ] **Unfolded Duo: title, search and initial visibility.** Native starts with the sidebar hidden, a large title below the buttons, and search hidden; decide which of these to match.
+- [ ] **Duo rail and app toolbar items.** The layout's own buttons now stay out of the Duo's vertical bar (fixed). Toolbar items that *app content* adds to the sidebar or detail could still end up in the rail and get stuck there. Decide whether the layout applies this to its columns automatically, or documents it.
 - [ ] **Tune mode thresholds** (currently side by side ≥ 920 points, overlay ≥ 520) after real-device use.
 - [ ] **Keyboard:** Escape closes the overlay sidebar; check ⌃⌘S and focus movement between columns.
 
 ## Testing
 
-- [ ] **iOS 17 and later.** The package must support iOS/iPadOS 17+. The layout code uses only iOS 17-era APIs, but the demo's tab shell needs iOS 18 (`Tab`) and 26 (`tabViewBottomAccessory`, `tabBarMinimizeBehavior`). Add a fallback shell (`.tabItem` tabs, player bar via `safeAreaInset`) so the demo runs on 17. Install iPad simulator runtimes for 17 and 18 (only iPhone 15 on 17.5 and iPhones on 18.2 are installed).
+- [ ] **iOS 17 and later.** The demos now target iOS 17 with a classic-tab fallback shell, and Native Demo is stable on iPhone at iOS 17.5 and 18.2. Still to do: Adaptive Demo on 17/18, and iPad on 17/18 (install iPad simulator runtimes for those; none are installed).
+- [ ] **Decide: native split view on iPhone, custom layout on iPad.** Native measured stable on iPhone (17.5, 18.2, 27.0) and on the Duo closed, partly folded and flat; the only issue seen is a one-frame sidebar width snap on the partly folded Duo when the sidebar is forced open at launch. Native splits at the fold only while partly folded.
 - [ ] **iPhone:** swipe-back, search with the keyboard up, player bar while scrolling, landscape, Dynamic Type.
-- [ ] **iPhone Duo:** unfolded, and folding/unfolding with a collection open. Only folded has been checked.
+- [ ] **iPhone Duo:** real taps when unfolded (synthesized taps don't register on the inner display), folding/unfolding with a collection open, and portrait unfolded. Folded, and unfolded landscape with the overlay opening and closing, have been checked.
 - [ ] **iPad:** live resizing between all three modes, rotation, overlay taps (dimming, sidebar button, choosing a collection).
 - [ ] **Scroll position:** confirm the list doesn't shift when switching modes after normal scrolling (a one-row shift was seen after a programmatic jump).
 - [ ] **VoiceOver:** overlay dismissal action, hidden sidebar not reachable, focus order.

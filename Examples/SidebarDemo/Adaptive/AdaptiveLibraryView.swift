@@ -21,6 +21,9 @@ struct AdaptiveLibraryMetrics: Equatable {
     /// reads as an overlay and can be tapped to dismiss.
     var minimumOverlayMargin: CGFloat = 100
 
+    /// Narrowest column on either side of a fold for the layout to split there.
+    var minimumColumnWidthAtFold: CGFloat = 300
+
     func mode(width: CGFloat, horizontalSizeClass: UserInterfaceSizeClass?) -> AdaptiveLibraryMode {
         // A compact size class also moves the tab bar to the bottom, so follow
         // the system there even if the width would allow an overlay.
@@ -32,6 +35,78 @@ struct AdaptiveLibraryMetrics: Equatable {
         }
         return .overlay
     }
+
+    /// The full arrangement, including a fold if there is one. Like the native
+    /// split view on iPhone Duo, an unfolded device puts the sidebar on one side
+    /// of the fold and the detail on the other, regardless of width.
+    func columns(
+        width: CGFloat,
+        horizontalSizeClass: UserInterfaceSizeClass?,
+        fold: AdaptiveLibraryFold?
+    ) -> AdaptiveLibraryColumns {
+        if horizontalSizeClass != .compact, let fold,
+           fold.position >= minimumColumnWidthAtFold,
+           width - fold.position >= minimumColumnWidthAtFold
+        {
+            return AdaptiveLibraryColumns(
+                mode: .sideBySide,
+                sidebarWidth: fold.position,
+                sidebarTrailingClearance: fold.leadingClearance,
+                detailLeadingClearance: fold.trailingClearance
+            )
+        }
+        return AdaptiveLibraryColumns(
+            mode: mode(width: width, horizontalSizeClass: horizontalSizeClass),
+            sidebarWidth: sidebarWidth
+        )
+    }
+}
+
+/// A fold (or another system division) that splits the Library's area into
+/// two sides, from SwiftUI's reserved regions (iOS 27.1+).
+struct AdaptiveLibraryFold: Equatable {
+    /// Where the area divides, in the Library's own coordinates.
+    var position: CGFloat
+    /// Space to keep clear of interactive content just before the fold.
+    var leadingClearance: CGFloat
+    /// Space to keep clear of interactive content just after the fold.
+    var trailingClearance: CGFloat
+
+    /// The first vertical division that runs the area's full height. The
+    /// region is used even while the system reports it as inactive (as it may
+    /// when the device is flat): the native split view divides at the fold in
+    /// every unfolded posture.
+    static func find(in proxy: GeometryProxy) -> AdaptiveLibraryFold? {
+        guard #available(iOS 27.1, *) else { return nil }
+        let size = proxy.size
+        for region in proxy.reservedRegions(kind: .division, options: .includeInactive) {
+            let frame = region.frame
+            // The fold itself, without the margins the system adds around it.
+            let foldMinX = frame.minX + region.margins.leading
+            let foldMaxX = frame.maxX - region.margins.trailing
+            let position = (foldMinX + foldMaxX) / 2
+            guard frame.height >= size.height - 1,
+                  frame.width < size.width / 2,
+                  position > 0, position < size.width
+            else { continue }
+            return AdaptiveLibraryFold(
+                position: position,
+                leadingClearance: position - frame.minX,
+                trailingClearance: frame.maxX - position
+            )
+        }
+        return nil
+    }
+}
+
+/// The resolved arrangement for one layout pass.
+struct AdaptiveLibraryColumns: Equatable {
+    var mode: AdaptiveLibraryMode
+    var sidebarWidth: CGFloat
+    /// Extra space inside the sidebar's trailing edge, e.g. beside a fold.
+    var sidebarTrailingClearance: CGFloat = 0
+    /// Extra space inside the detail's leading edge in side-by-side mode.
+    var detailLeadingClearance: CGFloat = 0
 }
 
 /// The custom Library layout. It picks a mode from the available width and
@@ -44,16 +119,25 @@ struct AdaptiveLibraryView: View {
 
     var body: some View {
         GeometryReader { proxy in
+            let fold = AdaptiveLibraryFold.find(in: proxy)
+            let columns = resolvedColumns(width: proxy.size.width, fold: fold)
             AdaptiveLibraryLayout(
                 model: model,
-                mode: debugMode
-                    ?? metrics.mode(width: proxy.size.width, horizontalSizeClass: horizontalSizeClass),
-                sidebarWidth: metrics.sidebarWidth,
+                columns: columns,
                 availableWidth: proxy.size.width
             )
+            #if DEBUG
+            .modifier(AdaptiveLibraryDebug.RegionLog(proxy: proxy, fold: fold, columns: columns))
+            #endif
         }
+        // Like the native split view, fill the whole tab, including safe areas
+        // such as the status bar, the iPhone Duo's rail and the player bar.
+        // Each column is hosted in UIKit, which gives it the safe area of the
+        // edges it actually touches, so backgrounds reach the edges while
+        // content stays clear of them.
+        .ignoresSafeArea(.container)
         #if DEBUG
-        .task {
+            .task {
                 // Switches modes on a fixed schedule so mode changes can be
                 // checked without resizing the window.
                 for mode in AdaptiveLibraryDebug.modeSchedule {
@@ -66,6 +150,14 @@ struct AdaptiveLibraryView: View {
                 }
             }
         #endif
+    }
+
+    private func resolvedColumns(width: CGFloat, fold: AdaptiveLibraryFold?) -> AdaptiveLibraryColumns {
+        var columns = metrics.columns(width: width, horizontalSizeClass: horizontalSizeClass, fold: fold)
+        if let debugMode {
+            columns.mode = debugMode
+        }
+        return columns
     }
 }
 
@@ -84,15 +176,59 @@ private enum AdaptiveLibraryDebug {
             .compactMap { AdaptiveLibraryMode(rawValue: String($0)) } ?? []
     }
 
-    /// `--select-collection=N` selects collection N at launch.
-    static var collectionToSelect: DemoCollection.ID? {
-        value(for: "--select-collection=").flatMap(Int.init)
+    /// `--sidebar-schedule=show,hide,...` shows or hides the current mode's
+    /// sidebar in turn, three seconds apart, like tapping its button.
+    static var sidebarSchedule: [Bool] {
+        value(for: "--sidebar-schedule=")?
+            .split(separator: ",")
+            .compactMap { $0 == "show" ? true : $0 == "hide" ? false : nil } ?? []
     }
 
     /// `--scroll-library-to=N` scrolls the Library list to collection N at launch.
     static var collectionToScrollTo: DemoCollection.ID? {
         value(for: "--scroll-library-to=").flatMap(Int.init)
     }
+
+    #if DEBUG
+        /// With `--inspect-native-layout`, writes the reserved division
+        /// regions and the resolved columns to `Documents/library-columns.txt`
+        /// whenever they change. Read-only.
+        struct RegionLog: ViewModifier {
+            let proxy: GeometryProxy
+            let fold: AdaptiveLibraryFold?
+            let columns: AdaptiveLibraryColumns
+
+            func body(content: Content) -> some View {
+                let text = description
+                return content
+                    .onAppear { Self.write(text) }
+                    .onChange(of: text) { Self.write(text) }
+            }
+
+            private var description: String {
+                var lines = ["size=\(proxy.size) safe=\(proxy.safeAreaInsets)"]
+                if #available(iOS 27.1, *) {
+                    for region in proxy.reservedRegions(kind: .division, options: .includeInactive) {
+                        lines.append("division frame=\(region.frame) margins=\(region.margins) active=\(region.isActive)")
+                    }
+                }
+                lines.append("fold=\(String(describing: fold))")
+                lines.append("columns=\(columns)")
+                return lines.joined(separator: "\n")
+            }
+
+            private static func write(_ text: String) {
+                guard flag("--inspect-native-layout"),
+                      let directory = try? FileManager.default.url(
+                          for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true
+                      )
+                else { return }
+                try? (text + "\n").write(
+                    to: directory.appendingPathComponent("library-columns.txt"), atomically: true, encoding: .utf8
+                )
+            }
+        }
+    #endif
 
     static func flag(_ flag: String) -> Bool {
         #if DEBUG
@@ -119,8 +255,7 @@ private enum AdaptiveLibraryDebug {
 /// list stay as they were.
 private struct AdaptiveLibraryLayout: View {
     let model: DemoModel
-    let mode: AdaptiveLibraryMode
-    let sidebarWidth: CGFloat
+    let columns: AdaptiveLibraryColumns
     let availableWidth: CGFloat
     @State private var isPinnedSidebarVisible = !AdaptiveLibraryDebug.flag("--hide-sidebar")
     @State private var isOverlaySidebarVisible = AdaptiveLibraryDebug.flag("--show-sidebar")
@@ -132,12 +267,22 @@ private struct AdaptiveLibraryLayout: View {
                 // Removing this column there doesn't disturb the Library stack,
                 // which keeps its place in the structure.
                 if mode != .stack {
-                    DemoDetailColumn(model: model, isSidebarVisible: sidebarVisibility)
-                        .padding(.leading, mode == .sideBySide && isPinnedSidebarVisible ? sidebarWidth : 0)
-                        .accessibilityHidden(isOverlayShowing)
+                    AdaptiveColumnHost(
+                        // Beside a fold, keep content clear of it on this side.
+                        leadingClearance: isDetailBesideSidebar ? columns.detailLeadingClearance : 0
+                    ) {
+                        DemoDetailColumn(model: model, isSidebarVisible: sidebarVisibility)
+                    }
+                    .padding(.leading, isDetailBesideSidebar ? sidebarWidth : 0)
+                    .accessibilityHidden(isOverlayShowing)
                 }
 
-                dimming
+                // Only present while showing, so VoiceOver never finds a
+                // "Hide Sidebar" control with no sidebar to hide.
+                if isOverlayShowing {
+                    dimming
+                        .transition(.opacity)
+                }
 
                 libraryStack
             }
@@ -147,52 +292,67 @@ private struct AdaptiveLibraryLayout: View {
                 }
             }
         }
-        .onAppear {
-            if let id = AdaptiveLibraryDebug.collectionToSelect, model.selectedCollectionID == nil {
-                model.selectCollection(id)
+        #if DEBUG
+        .task {
+                for isVisible in AdaptiveLibraryDebug.sidebarSchedule {
+                    do {
+                        try await Task.sleep(for: .seconds(3))
+                    } catch {
+                        return
+                    }
+                    withAnimation(Self.animation) {
+                        sidebarVisibility.wrappedValue = isVisible
+                    }
+                }
             }
-        }
-        .onChange(of: mode) { oldMode, _ in
-            // An overlay left open shouldn't reappear the next time the
-            // window narrows.
-            if oldMode == .overlay {
-                isOverlaySidebarVisible = false
-            }
-        }
-        .onChange(of: model.selectedCollectionID) {
-            // Choosing a collection from the overlay reveals it, like native.
-            if mode == .overlay, isOverlaySidebarVisible {
-                withAnimation(Self.animation) {
+        #endif
+            .onChange(of: mode) { oldMode, _ in
+                // An overlay left open shouldn't reappear the next time the
+                // window narrows.
+                if oldMode == .overlay {
                     isOverlaySidebarVisible = false
                 }
             }
-        }
+            .onChange(of: model.selectedCollectionID) {
+                // Choosing a collection from the overlay reveals it, like native.
+                if mode == .overlay, isOverlaySidebarVisible {
+                    withAnimation(Self.animation) {
+                        isOverlaySidebarVisible = false
+                    }
+                }
+            }
     }
 
     private var dimming: some View {
         Rectangle()
-            .fill(.black)
-            .opacity(isOverlayShowing ? 0.2 : 0)
+            .fill(.black.opacity(0.2))
             .ignoresSafeArea()
             .contentShape(Rectangle())
-            .allowsHitTesting(isOverlayShowing)
             .onTapGesture(perform: hideOverlay)
             .accessibilityLabel("Hide Sidebar")
             .accessibilityAddTraits(.isButton)
             .accessibilityAction(.default, hideOverlay)
-            .accessibilityHidden(!isOverlayShowing)
     }
 
     private var libraryStack: some View {
-        NavigationStack(path: libraryPath) {
-            DemoLibraryBrowser(
-                model: model,
-                placement: mode == .stack ? .compactStack : .navigationStack,
-                isSidebarVisible: mode == .stack ? nil : sidebarVisibility
-            )
-            .navigationDestination(for: DemoCollection.ID.self) { id in
-                if let collection = model.collection(id: id) {
-                    DemoCollectionDetail(collection: collection, model: model)
+        // Hosted so the sidebar's safe area comes from where it sits, not the
+        // whole layout (it mustn't get the iPhone Duo rail's inset from the far
+        // edge), and so fold clearance reaches its bar, search and list.
+        AdaptiveColumnHost(
+            trailingClearance: mode == .stack ? 0 : columns.sidebarTrailingClearance,
+            // As a column it never reaches the rail; as the whole Library it may.
+            allowsVerticalBar: mode == .stack
+        ) {
+            NavigationStack(path: libraryPath) {
+                DemoLibraryBrowser(
+                    model: model,
+                    placement: mode == .stack ? .compactStack : .navigationStack,
+                    isSidebarVisible: mode == .stack ? nil : sidebarVisibility
+                )
+                .navigationDestination(for: DemoCollection.ID.self) { id in
+                    if let collection = model.collection(id: id) {
+                        DemoCollectionDetail(collection: collection, model: model)
+                    }
                 }
             }
         }
@@ -222,6 +382,18 @@ private struct AdaptiveLibraryLayout: View {
     /// its root.
     private var libraryPath: Binding<[DemoCollection.ID]> {
         mode == .stack ? Bindable(model).stackPath : .constant([])
+    }
+
+    private var mode: AdaptiveLibraryMode {
+        columns.mode
+    }
+
+    private var sidebarWidth: CGFloat {
+        columns.sidebarWidth
+    }
+
+    private var isDetailBesideSidebar: Bool {
+        mode == .sideBySide && isPinnedSidebarVisible
     }
 
     private var sidebarVisibility: Binding<Bool> {

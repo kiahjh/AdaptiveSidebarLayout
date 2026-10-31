@@ -10,6 +10,7 @@
 		0153C312238C55D26CD315DD /* AdaptiveDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07CD443CB910EEA6ECBFA328 /* AdaptiveDemoApp.swift */; };
 		0338C74BEBD606B5C44EF731 /* DemoRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6881D06A56C8D2FAF3D37198 /* DemoRootView.swift */; };
 		18E663C2279E350D94048439 /* SafeAreaExplorerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93BBFC343522B1DA6EB76D5A /* SafeAreaExplorerView.swift */; };
+		24074CB02868CDC422588AA9 /* UIKitSplitExperiment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A76183CA38B4B0D8B9B8DB6 /* UIKitSplitExperiment.swift */; };
 		2529971EF4DB420E9BF49778 /* DemoContentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47D51B03F5012ECC27A5BD8 /* DemoContentViews.swift */; };
 		259F0C3992B91C85FB5AA237 /* NativeSplitViewConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F55F65ADE8F9CCC30A89AE2 /* NativeSplitViewConfigurationTests.swift */; };
 		3812B371798D7E8D6F2057BA /* NativeLayoutProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B432F9722679A367E8DE1D9 /* NativeLayoutProbe.swift */; };
@@ -28,6 +29,7 @@
 		C5DDF85E728C6EFBA1DEB69B /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5895B3C7C93E5D63FB7183D6 /* DemoData.swift */; };
 		CD3F825996D26982BEB92385 /* AdaptiveLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D3C56B12F54D1EA1E44488B /* AdaptiveLibraryTests.swift */; };
 		D988A270F19B54BDBEEAB4E2 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5895B3C7C93E5D63FB7183D6 /* DemoData.swift */; };
+		DEB3F45A332335D6608D5D9F /* AdaptiveColumnHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0051A904C1823B016C8FFA3B /* AdaptiveColumnHost.swift */; };
 		E1535C04E526EB3623FFE6B9 /* NativeDemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60744587FF5E86616B9EEADF /* NativeDemoApp.swift */; };
 		E4681E9E4DE2E186A0B6B8D9 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5895B3C7C93E5D63FB7183D6 /* DemoData.swift */; };
 		EE7B52A468C3C07F67512832 /* ExplorerWindowProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02B409613BBA2FAD43C23839 /* ExplorerWindowProbe.swift */; };
@@ -53,6 +55,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0051A904C1823B016C8FFA3B /* AdaptiveColumnHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveColumnHost.swift; sourceTree = "<group>"; };
 		02B409613BBA2FAD43C23839 /* ExplorerWindowProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorerWindowProbe.swift; sourceTree = "<group>"; };
 		07CD443CB910EEA6ECBFA328 /* AdaptiveDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveDemoApp.swift; sourceTree = "<group>"; };
 		1D3C56B12F54D1EA1E44488B /* AdaptiveLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveLibraryTests.swift; sourceTree = "<group>"; };
@@ -61,6 +64,7 @@
 		3C78A727B1AB05D023E7E785 /* AdaptiveDemoTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = AdaptiveDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		447D06E799C91DF11ABD1FFB /* DemoTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		44DE531648F50827CEF98C9E /* NativeDemo.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NativeDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A76183CA38B4B0D8B9B8DB6 /* UIKitSplitExperiment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitSplitExperiment.swift; sourceTree = "<group>"; };
 		5895B3C7C93E5D63FB7183D6 /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
 		60744587FF5E86616B9EEADF /* NativeDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeDemoApp.swift; sourceTree = "<group>"; };
 		6881D06A56C8D2FAF3D37198 /* DemoRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoRootView.swift; sourceTree = "<group>"; };
@@ -129,9 +133,11 @@
 		87463C0B813A6FACB31AD3D6 /* Adaptive */ = {
 			isa = PBXGroup;
 			children = (
+				0051A904C1823B016C8FFA3B /* AdaptiveColumnHost.swift */,
 				07CD443CB910EEA6ECBFA328 /* AdaptiveDemoApp.swift */,
 				C29F1A5D7D2A873525E2B70E /* AdaptiveLibraryView.swift */,
 				EE4E42A6C13C47BD6762E420 /* Info.plist */,
+				4A76183CA38B4B0D8B9B8DB6 /* UIKitSplitExperiment.swift */,
 			);
 			path = Adaptive;
 			sourceTree = "<group>";
@@ -363,6 +369,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DEB3F45A332335D6608D5D9F /* AdaptiveColumnHost.swift in Sources */,
 				0153C312238C55D26CD315DD /* AdaptiveDemoApp.swift in Sources */,
 				A92C3F78AD20F52FCBD25F66 /* AdaptiveLibraryView.swift in Sources */,
 				2529971EF4DB420E9BF49778 /* DemoContentViews.swift in Sources */,
@@ -370,6 +377,7 @@
 				C508484871293C1E73F01055 /* DemoModel.swift in Sources */,
 				653A4AC9F6F50A9485CB3768 /* DemoRootView.swift in Sources */,
 				C256B2DD4622354DC49AF199 /* NativeLayoutProbe.swift in Sources */,
+				24074CB02868CDC422588AA9 /* UIKitSplitExperiment.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,6 +458,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = Diagnostics/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -580,7 +589,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -617,6 +626,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = Diagnostics/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -681,7 +691,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

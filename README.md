@@ -8,7 +8,7 @@ Native Demo uses native SwiftUI navigation with a scoped top-edge container fix,
 
 Open work is tracked in [TODO.md](TODO.md).
 
-**Compatibility goal:** the eventual package must support iOS/iPadOS 17 and later, and everything needs testing back to 17. The demo apps currently target iOS 26 because their shared tab shell uses newer tab APIs; see the notes for what an iOS 17 test shell needs.
+**Compatibility goal:** the eventual package must support iOS/iPadOS 17 and later, and everything needs testing back to 17. The demo apps target iOS 17: on iOS 26 and later they use the tab bar's bottom accessory for the player, and on earlier versions classic tabs with the player bar above them.
 
 **Known stability failure:** subsequent manual testing found intermittent excessive top spacing on launch, sometimes persistent until resizing and sometimes briefly visible before correcting itself. The top-edge change addresses the measured background/dimming gap, but is **not a complete, validated layout solution**. See [the investigation record](Examples/SidebarDemo/BackgroundInvestigation.md#cold-launch-stability-failure-after-default-build).
 
@@ -18,7 +18,7 @@ Open work is tracked in [TODO.md](TODO.md).
 2. Select the **Native Demo** scheme and an iPad, iPhone, or iPhone Duo simulator available in your Xcode installation.
 3. Run the app. No signing team is needed for the simulator; choose your own team to run on a physical device.
 
-The example requires iOS/iPadOS 26 or newer to exercise the native `tabViewBottomAccessory` API. This is the example app's deployment target, not a decision about the future package's minimum supported OS.
+The examples run on iOS/iPadOS 17 or newer. The native `tabViewBottomAccessory` player needs iOS 26; earlier versions show a fallback player bar above classic tabs.
 
 All content is local and deterministic. Playback is simulated: no audio, account, network connection, or permissions are required.
 
@@ -58,7 +58,7 @@ These are observation scenarios, not claims that the native implementation is de
 - **iPad transitions:** check wide side-by-side columns, the intermediate overlay sidebar and its dimming/dismissal, compact stack navigation, and repeated resizing between them. Include floating, display-edge-touching, and full-screen windows.
 - **Duo:** exercise the simulator's available fold states, postures, and rotations while retaining a selection and a deeper detail navigation path. This app still uses native adaptation only; no custom fold-geometry handling has been added or claimed as validated.
 
-The **Reset demo** toolbar action restores the sample data and navigation state. It does not recreate the native view controllers; relaunch the app when checking cold-launch behavior.
+Relaunch the app to return to the initial sample data and navigation state, and when checking cold-launch behavior.
 
 ## Safe Area Explorer
 

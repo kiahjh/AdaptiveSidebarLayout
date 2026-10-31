@@ -1,8 +1,10 @@
 name: SidebarDemo
 options:
   minimumXcodeGenVersion: 2.44.0
+  # The layouts must support iOS 17 and later. The demo shell falls back to
+  # classic tabs before iOS 26.
   deploymentTarget:
-    iOS: "26.0"
+    iOS: "17.0"
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -102,6 +104,8 @@ targets:
   SafeAreaExplorer:
     type: application
     platform: iOS
+    # Diagnostic for the iOS 26 tab bar only.
+    deploymentTarget: "26.0"
     sources:
       - Diagnostics
     settings:

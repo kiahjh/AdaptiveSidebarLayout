@@ -97,6 +97,88 @@ Checked on the iPad simulator with Debug-only `--scroll-library-to=12` and `--li
 
 Checked on iPhone 18 Pro with real taps through Xcode's device-interaction tools: tapping a row pushes the collection; Back returns to the list with no row left highlighted; tapping the same row again pushes again. Swipe-back wasn't exercised.
 
+### Step 3b: iPhone Duo's vertical bar (rail)
+
+The user found that on the unfolded Duo there was no sidebar and no button to open it. Unfolded in landscape, the window is 951 × 669 with an 84-point rail on the trailing edge, so the layout gets 867 points and uses the overlay mode, sidebar closed.
+
+The rail is UIKit's **vertical bar** (iOS 27.1, `UIVerticalBarEdge`, `preferredVerticalBarBehavior`). Besides the status bar and tabs, it shows *one* navigation stack's toolbar items, and a full-width stack's horizontal bar collapses to zero height. Reproduced with Debug `--sidebar-schedule=show,hide`:
+
+1. Fresh launch, sidebar closed: the detail's show-sidebar button appears in the rail.
+2. Sidebar opened: the rail switches to the sidebar's items (reset and hide).
+3. Sidebar closed again: the rail keeps showing the sidebar's items, minus the hide button. The detail's show-sidebar button never returns, so the sidebar can't be reopened.
+
+Native's split view, by contrast, keeps its column toolbars horizontal (sidebar button at top left) and leaves the rail to the status bar and tabs.
+
+**Fix:** toolbar items in the column modes use SwiftUI's new `axisBehavior(.horizontalOnly)` (iOS 27.1+, via a `keepsHorizontalBar(_:)` helper that does nothing on earlier versions). They stay in their own column's toolbar, as in native. Verified on the unfolded Duo across closed → open → closed → open: the sidebar button is at the top left when closed, the sidebar's buttons are in its own toolbar when open, and the rail holds only the status bar and tabs. The stack mode keeps automatic placement, so a full-width stack still uses the rail like any system stack.
+
+For the package: the sidebar's *content* can add its own toolbar items, which would face the same problem unless they also opt out of the vertical bar. The layout may need to apply this to its columns automatically, or document it.
+
+Taps on the Duo's inner display didn't register through Xcode's device-interaction tools (taps on iPhone did), so these checks used the schedule flag instead of real taps.
+
+Also fixed: the overlay's dimming layer was exposed to VoiceOver as a "Hide Sidebar" button even with no overlay open. It now exists only while the overlay is showing. And toolbar buttons (sidebar, reset) use the primary color instead of the indigo accent, matching native's sidebar button (user request).
+
+### Step 3c: unfolded Duo should split at the fold (in progress)
+
+The user compared the apps on the unfolded Duo and found three differences that the step 3b check missed. That check only confirmed the sidebar button worked, against a native screenshot with the sidebar closed. From here on, every check compares native and custom in the same device and state, side by side.
+
+Native, measured on the unfolded Duo (951 × 669 window, 84-point rail on the right):
+
+- **Starts with the sidebar hidden**; when shown, the columns are **side by side, split at the fold**, not a slide-over. The sidebar is 475.7 points wide (half the window) and ignores the 420-point ideal width.
+- **Fold clearance:** the sidebar's trailing safe inset is 20 and the detail's leading safe inset is 495.7 (fold + 20). The sidebar gets no rail inset.
+- **Title and search:** the large title sits below the toolbar buttons and the search field starts hidden (zero height).
+
+The fold comes from SwiftUI's new `GeometryProxy.reservedRegions(kind: .division)` (iOS 27.1; UIKit `UIView.reservedRegions`, `UIViewReservedRegionKind.divisionRegionKind`). On the Duo it reports one active region, frame `(455.5, 0, 40, 669)` with 20-point margins on each side, so the fold is at 475.5, matching native.
+
+Done so far:
+
+- `AdaptiveLibraryFold.find(in:)` reads the first active, full-height, vertical division region. `AdaptiveLibraryMetrics.columns(width:horizontalSizeClass:fold:)` puts the sidebar on one side of the fold and the detail on the other (each side at least 300 points), regardless of the width thresholds. Verified on the Duo: sidebar 475.5 points, side by side.
+- The sidebar no longer inherits the window's trailing safe area at the SwiftUI level (`ignoresSafeArea(.container, edges: .trailing)` in the column modes), and each column asks for the fold's 20-point clearance with `safeAreaPadding`.
+
+Not fixed yet:
+
+- **84-point gap inside the sidebar.** UIKit adds the rail's width to the content of the sidebar's navigation stack even though the stack is nowhere near the rail: the sidebar's `UINavigationController` reports trailing inset 0, but its root hosting controller reports 84. SwiftUI modifiers outside the stack can't remove it, and the fold clearance from `safeAreaPadding` doesn't reach the UIKit-hosted stack either. Native avoids this because `UISplitViewController` manages its columns' insets. Fixing it likely needs the layout to host its columns in a small UIKit container it owns, or a SwiftUI API not yet found; that's a design decision for the user.
+- **Title and search placement** differ (see above). Native's iPad sidebar starts with a small title and visible search, while its Duo sidebar starts with a large title and hidden search. The custom layout always shows search, per the user's earlier choice.
+- **Initial visibility:** native starts with the sidebar hidden on the Duo; the custom layout shows it.
+
+Debug: with `--inspect-native-layout`, Adaptive Demo also writes `Documents/library-columns.txt` with the division regions, the fold and the resolved columns.
+
+### Experiment: UIKit's split view with our stacks (`--uikit-split`)
+
+Why the sidebar keeps the rail's 84 points: each navigation stack reserves the rail's width when its trait collection says the vertical bar is on its trailing edge (`verticalBarEdge == .trailing`). Every controller in the custom layout reports that. In the native split view, the sidebar column reports `verticalBarEdge == .unspecified` (the split view sets this through private traits, `_UITraitVerticalBarAllowed`), so its content gets only the 20-point fold clearance. Overriding `preferredVerticalBarBehavior` on a column's hosting controller doesn't change the trait.
+
+The Debug-only `--uikit-split` flag runs Adaptive Demo's Library on UIKit's `UISplitViewController` directly (double column, tiled), with our SwiftUI stacks hosted in its columns and its own navigation bars hidden. Results:
+
+- **iPhone Duo, unfolded:** matches native. The sidebar reports `edge=0` and a 20-point trailing inset, with no rail gap; the detail gets the 495.7-point leading inset and the rail's 84 points; both columns reach the bottom. Side-by-side screenshots match native apart from the list's card style.
+- **iPad, full screen:** the launch jump returns, in 3 of 3 launches: toolbars at `y = 150` (tab content inset 96), then `y = 86` (inset 32) about 0.1 s later, the same as `NavigationSplitView`. So the jump comes from UIKit's split view inside a tab, not from SwiftUI's wrapper. Its default sidebar width is 320 points.
+
+### Plan under evaluation: native split view on iPhone, custom layout on iPad
+
+Proposal (user): use SwiftUI's `NavigationSplitView` on iPhone-idiom devices (including iPhone Duo) and the custom layout on iPad. The choice has to be made at runtime (`userInterfaceIdiom`): one iOS binary serves both families, so `#if` can't remove the unused path. It never changes while the app runs.
+
+Native Demo cold launches, layout timeline from the first reading through about 9 seconds:
+
+| Device | State | Launches | Result |
+| --- | --- | --- | --- |
+| iPhone 18 Pro, iOS 27.0 | default | 4 | Stable: bar at `y = 62` from the first reading in all 4 |
+| iPhone Duo, unfolded, iOS 27.1 | sidebar forced open (`--show-sidebar`), collection selected | 4 | No vertical movement. In 2 of 4, the sidebar starts 419 points wide and widens to the fold (475.7) about 0.1 s later; a 10 fps recording shows it in one frame of the launch fade-in |
+| iPhone Duo, unfolded | default (sidebar starts hidden), collection selected | 4 | Stable in all 4 |
+| iPhone Duo, closed (outer screen, 466 × 678) | default | 4 | Stable in all 4; one stack, large title, search hidden until pulled |
+| iPhone Duo, closed | collection selected (pushed) | 2 | Stable in both; back button in the rail |
+| iPhone Duo, fully flat | default, collection selected | 3 | Stable in all 3 |
+| iPhone Duo, fully flat | sidebar forced open, collection selected | 3 | Stable in all 3. Flat, native does **not** split at the fold: the sidebar is its normal 419 points, side by side |
+| iPhone 15, iOS 17.5 | default | 3 | Stable in all 3 (classic-tab fallback shell) |
+| iPhone 16 Pro, iOS 18.2 | default | 3 | Stable in all 3 (classic-tab fallback shell) |
+
+On iOS 17.5 the native sidebar's search field was visible on the first launch after install and hidden on the next two; each launch was stable. That's system behavior, not the demo's.
+
+Native on the Duo therefore splits at the fold only while partly folded; flat, it behaves like any wide window. The custom layout's use of an *inactive* division region (step 3c) doesn't match that and would need revisiting if the custom layout is used on the Duo.
+
+Not yet checked: interactions (opening the sidebar, rotation, folding with a collection open), and iOS 17/18 on iPad.
+
+### iOS 17 support in the demos
+
+The demo apps now target iOS 17. `DemoRootView` uses the `Tab` API with the tab bar's bottom accessory and minimization on iOS 26 and later, and falls back to classic `.tabItem` tabs with the player bar in a bottom `safeAreaInset` on iOS 17–25. The Debug-only mirrored-background trial needs iOS 26 and does nothing earlier. Safe Area Explorer stays at iOS 26, since it diagnoses the iOS 26 tab bar. All apps and test targets build with the iOS 17 minimum.
+
 ### The 10-point toolbar gap, explained
 
 On iPad, the floating tab bar needs room at the top. Apple's split view leaves a 54-point strip for it, so its toolbars start at 86 (full screen, 32-point status area). Ordinary content, including our side-by-side columns, gets the system's standard 64-point strip, so our toolbars start at 96. A single full-width stack puts the tab bar inside its own toolbar row, starting at 32. Matching 86 by subtracting a hard-coded 10 points would break this project's no-fixed-offset rule. The user wants to match native, carefully: find an approach that doesn't hard-code the difference, and test it with and without a `TabView`, with the tab bar at the bottom, and back to iOS 17. Tracked in [TODO.md](../../TODO.md).
@@ -122,4 +204,4 @@ Each step repeats this launch comparison.
 
 Launch either app with `--inspect-native-layout`. The probe writes `Documents/layout-timeline.txt` (one summary line per reading: seconds since process start, the selected tab's top safe inset, and every visible navigation bar's frame) and `Documents/native-layout.txt` (the latest full hierarchy). Readings happen on the probe's own layout changes and at fixed times during the first 8 seconds. The probe never changes layout.
 
-Add `--present-search` (Debug only, either app) to open Library search when it appears, or, in Adaptive Demo only (Debug): `--hide-sidebar` (side-by-side sidebar starts hidden), `--show-sidebar` (overlay sidebar starts shown), `--library-layout=side-by-side|overlay|stack` (force a mode regardless of width), `--library-layout-schedule=MODE,MODE,...` (switch to each mode in turn, 3 seconds apart), `--select-collection=N` (select collection N at launch), and `--scroll-library-to=N` (scroll the Library list to collection N at launch). Timeline lines also include each large scroll view's offset and adjusted top inset.
+Add `--present-search` (Debug only, either app) to open Library search when it appears, or, in Adaptive Demo only (Debug): `--hide-sidebar` (side-by-side sidebar starts hidden), `--show-sidebar` (overlay sidebar starts shown), `--library-layout=side-by-side|overlay|stack` (force a mode regardless of width), `--library-layout-schedule=MODE,MODE,...` (switch to each mode in turn, 3 seconds apart), `--sidebar-schedule=show,hide,...` (show or hide the sidebar in turn, 3 seconds apart), `--select-collection=N` (select collection N at launch), and `--scroll-library-to=N` (scroll the Library list to collection N at launch). Timeline lines also include each large scroll view's offset and adjusted top inset.

@@ -56,7 +56,12 @@ private struct NativeSplitViewContainerStyle: ViewModifier {
         case .topExtended:
             content.ignoresSafeArea(.container, edges: .top)
         case .mirroredBackground:
-            content.backgroundExtensionEffect()
+            // Debug-only trial; the effect doesn't exist before iOS 26.
+            if #available(iOS 26, *) {
+                content.backgroundExtensionEffect()
+            } else {
+                content
+            }
         }
     }
 }

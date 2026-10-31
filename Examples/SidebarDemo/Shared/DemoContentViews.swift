@@ -8,8 +8,8 @@ enum DemoLibraryPlacement: Equatable {
     case splitViewSidebar
     /// A plain `NavigationStack` used as a sidebar next to a separate detail
     /// stack. Rows use the list's selection binding. Search uses the
-    /// always-visible under-title drawer explicitly, because automatic
-    /// placement puts it in the toolbar on iPad.
+    /// under-title drawer explicitly (hidden until the list is pulled down),
+    /// because automatic placement puts it in the toolbar on iPad.
     case navigationStack
     /// The root of a single `NavigationStack` that also shows the detail.
     /// Rows match `.navigationStack`, plus a chevron; the layout pushes the
@@ -42,13 +42,11 @@ struct DemoLibraryBrowser: View {
                 }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Reset demo", systemImage: "arrow.counterclockwise", action: model.reset)
-                }
                 if let isSidebarVisible, isSidebarVisible.wrappedValue {
                     ToolbarItem(placement: .topBarTrailing) {
                         DemoSidebarButton(isVisible: isSidebarVisible)
                     }
+                    .keepsHorizontalBar(true)
                 }
             }
             .onAppear {
@@ -84,9 +82,9 @@ struct DemoLibraryBrowser: View {
     private var searchPlacement: SearchFieldPlacement {
         switch placement {
         case .splitViewSidebar: .automatic
-        // Always visible, like the native sidebar's field. This makes the
-        // large title start collapsed, which is accepted.
-        case .navigationStack, .compactStack: .navigationBarDrawer(displayMode: .always)
+        // Hidden until the list is pulled down, like the native sidebar on
+        // iPhone Duo; the large title shows at launch (user's choice).
+        case .navigationStack, .compactStack: .navigationBarDrawer(displayMode: .automatic)
         }
     }
 
@@ -164,6 +162,26 @@ struct DemoDetailColumn: View {
             ToolbarItem(placement: .topBarLeading) {
                 DemoSidebarButton(isVisible: isSidebarVisible)
             }
+            .keepsHorizontalBar(true)
+        }
+    }
+}
+
+extension ToolbarContent {
+    /// Keeps a toolbar item in its column's own horizontal toolbar on iOS 27.1
+    /// and later, instead of the system's vertical bar (the rail beside the
+    /// content on iPhone Duo).
+    ///
+    /// The vertical bar shows one navigation stack's items. With two stacks
+    /// side by side it can show the wrong column's, and it can keep showing a
+    /// hidden sidebar's items. Native split views keep column items in their
+    /// horizontal toolbars, leaving the rail to the status bar and tabs.
+    @ToolbarContentBuilder
+    func keepsHorizontalBar(_ isEnabled: Bool) -> some ToolbarContent {
+        if #available(iOS 27.1, *), isEnabled {
+            axisBehavior(.horizontalOnly)
+        } else {
+            self
         }
     }
 }
@@ -180,6 +198,9 @@ struct DemoSidebarButton: View {
             }
         }
         .keyboardShortcut("s", modifiers: [.control, .command])
+        // Plain black or white like native's sidebar button, not the app's
+        // accent color.
+        .tint(.primary)
     }
 }
 
@@ -251,11 +272,6 @@ struct DemoQueueView: View {
             }
         }
         .navigationTitle("Queue")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Reset demo", systemImage: "arrow.counterclockwise", action: model.reset)
-            }
-        }
     }
 }
 
