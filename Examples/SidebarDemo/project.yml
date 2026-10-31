@@ -1,0 +1,175 @@
+name: SidebarDemo
+options:
+  minimumXcodeGenVersion: 2.44.0
+  deploymentTarget:
+    iOS: "26.0"
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    TARGETED_DEVICE_FAMILY: "1,2"
+    CODE_SIGN_STYLE: Automatic
+targets:
+  NativeDemo:
+    type: application
+    platform: iOS
+    sources:
+      - Shared
+      - Native
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.adaptivesidebarlayout.demo.native
+        PRODUCT_NAME: NativeDemo
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+    info:
+      path: Native/Info.plist
+      properties:
+        CFBundleDisplayName: Native Demo
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+  SplitOnlyDemo:
+    type: application
+    platform: iOS
+    sources:
+      - path: Shared
+        excludes:
+          - DemoRootView.swift
+      - Native/NativeLibraryView.swift
+      - Native/NativeLayoutProbe.swift
+      - SplitOnly
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.adaptivesidebarlayout.demo.splitonly
+        PRODUCT_NAME: SplitOnlyDemo
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+    info:
+      path: SplitOnly/Info.plist
+      properties:
+        CFBundleDisplayName: Split Only Demo
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+  AdaptiveDemo:
+    type: application
+    platform: iOS
+    sources:
+      - Shared
+      - Adaptive
+      - Native/NativeLayoutProbe.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.adaptivesidebarlayout.demo.adaptive
+        PRODUCT_NAME: AdaptiveDemo
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+    info:
+      path: Adaptive/Info.plist
+      properties:
+        CFBundleDisplayName: Adaptive Demo
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+  SafeAreaExplorer:
+    type: application
+    platform: iOS
+    sources:
+      - Diagnostics
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.adaptivesidebarlayout.demo.safearea
+        PRODUCT_NAME: SafeAreaExplorer
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+    info:
+      path: Diagnostics/Info.plist
+      properties:
+        CFBundleDisplayName: Safe Area Explorer
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+  DemoTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+        excludes:
+          - "Adaptive/**"
+    dependencies:
+      - target: NativeDemo
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.adaptivesidebarlayout.demo.tests
+        GENERATE_INFOPLIST_FILE: true
+  AdaptiveDemoTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - Tests/Adaptive
+    dependencies:
+      - target: AdaptiveDemo
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.adaptivesidebarlayout.demo.adaptive-tests
+        GENERATE_INFOPLIST_FILE: true
+schemes:
+  Adaptive Demo:
+    build:
+      targets:
+        AdaptiveDemo: all
+    test:
+      targets:
+        - AdaptiveDemoTests
+  Split Only Demo:
+    build:
+      targets:
+        SplitOnlyDemo: all
+  Safe Area Explorer:
+    build:
+      targets:
+        SafeAreaExplorer: all
+  Native Demo:
+    build:
+      targets:
+        NativeDemo: all
+    test:
+      targets:
+        - DemoTests
