@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// How the custom Library arranges its sidebar and detail.
 enum AdaptiveLibraryMode: String, Equatable, CaseIterable {
@@ -109,9 +110,50 @@ struct AdaptiveLibraryColumns: Equatable {
     var detailLeadingClearance: CGFloat = 0
 }
 
+/// Which implementation the Library uses.
+enum AdaptiveLibraryEngine: Equatable {
+    /// SwiftUI's `NavigationSplitView`. On iPhone-family devices (including
+    /// iPhone Duo) it launches without layout jumps, collapses to one stack,
+    /// and handles a Duo's fold and rail itself.
+    case system
+    /// The custom layout of plain navigation stacks. On iPad it avoids the
+    /// launch-time toolbar jump that the system split view shows beneath the
+    /// floating tab bar.
+    case custom
+
+    /// The device family never changes while an app runs, so this is decided
+    /// once per launch. One binary serves both families, so it has to be a
+    /// runtime check rather than a compile-time one.
+    static func resolve(idiom: UIUserInterfaceIdiom, arguments: [String]) -> Self {
+        #if DEBUG
+            if arguments.contains("--force-custom-layout") { return .custom }
+            if arguments.contains("--force-system-split") { return .system }
+        #endif
+        return idiom == .phone ? .system : .custom
+    }
+}
+
+/// The Library: the system split view on iPhone, the custom layout on iPad.
+/// Both show the same sidebar and detail content.
+struct AdaptiveLibraryView: View {
+    let model: DemoModel
+
+    var body: some View {
+        switch AdaptiveLibraryEngine.resolve(
+            idiom: UIDevice.current.userInterfaceIdiom,
+            arguments: ProcessInfo.processInfo.arguments
+        ) {
+        case .system:
+            NativeLibraryView(model: model)
+        case .custom:
+            AdaptiveCustomLibraryView(model: model)
+        }
+    }
+}
+
 /// The custom Library layout. It picks a mode from the available width and
 /// uses only ordinary navigation stacks, never `NavigationSplitView`.
-struct AdaptiveLibraryView: View {
+struct AdaptiveCustomLibraryView: View {
     let model: DemoModel
     var metrics = AdaptiveLibraryMetrics()
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass

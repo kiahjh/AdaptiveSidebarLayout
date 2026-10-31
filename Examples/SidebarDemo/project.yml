@@ -79,6 +79,8 @@ targets:
       - Shared
       - Adaptive
       - Native/NativeLayoutProbe.swift
+      # The system split view used on iPhone-family devices.
+      - Native/NativeLibraryView.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.adaptivesidebarlayout.demo.adaptive

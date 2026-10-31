@@ -22,7 +22,7 @@ Open work for the adaptive sidebar layout. Details and measurements live in [the
 ## Testing
 
 - [ ] **iOS 17 and later.** The demos now target iOS 17 with a classic-tab fallback shell, and Native Demo is stable on iPhone at iOS 17.5 and 18.2. Still to do: Adaptive Demo on 17/18, and iPad on 17/18 (install iPad simulator runtimes for those; none are installed).
-- [ ] **Decide: native split view on iPhone, custom layout on iPad.** Native measured stable on iPhone (17.5, 18.2, 27.0) and on the Duo closed, partly folded and flat; the only issue seen is a one-frame sidebar width snap on the partly folded Duo when the sidebar is forced open at launch. Native splits at the fold only while partly folded.
+- [x] **Native split view on iPhone, custom layout on iPad.** Adopted in Adaptive Demo. Native measured stable on iPhone (17.5, 18.2, 27.0) and on the Duo closed, partly folded and flat; the only issue seen is a one-frame sidebar width snap on the partly folded Duo when the sidebar is forced open at launch, so the Duo keeps the system default (sidebar starts hidden).
 - [ ] **iPhone:** swipe-back, search with the keyboard up, player bar while scrolling, landscape, Dynamic Type.
 - [ ] **iPhone Duo:** real taps when unfolded (synthesized taps don't register on the inner display), folding/unfolding with a collection open, and portrait unfolded. Folded, and unfolded landscape with the overlay opening and closing, have been checked.
 - [ ] **iPad:** live resizing between all three modes, rotation, overlay taps (dimming, sidebar button, choosing a collection).

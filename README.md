@@ -4,7 +4,7 @@ An experiment in adaptive sidebar layouts that compose with native SwiftUI tabs 
 
 Native Demo uses native SwiftUI navigation with a scoped top-edge container fix, now enabled by default. The original inset behavior remains available as a debug-only comparison option.
 
-**Custom layout:** the **Adaptive Demo** scheme runs a separate app with the same content, tabs and accessory. Its Library tab uses plain navigation stacks instead of `NavigationSplitView` and adapts to the width it gets: side by side when wide (with a collapsible sidebar), a slide-over sidebar at medium widths, and a single stack on iPhone, folded Duo and narrow windows. In paired cold launches, its toolbars stayed in place from the first reading, while Native Demo's moved 64 points every time. See [the custom layout notes](Examples/SidebarDemo/CustomLayout.md).
+**Custom layout:** the **Adaptive Demo** scheme runs a separate app with the same content, tabs and accessory. On iPhone, including iPhone Duo, its Library uses the system `NavigationSplitView`, which is stable there and handles the Duo's fold. On iPad it uses a custom layout of plain navigation stacks that adapts to the width it gets: side by side when wide (with a collapsible sidebar), a slide-over sidebar at medium widths, and a single stack in narrow windows. In paired cold launches, its toolbars stayed in place from the first reading, while Native Demo's moved 64 points every time. See [the custom layout notes](Examples/SidebarDemo/CustomLayout.md).
 
 Open work is tracked in [TODO.md](TODO.md).
 

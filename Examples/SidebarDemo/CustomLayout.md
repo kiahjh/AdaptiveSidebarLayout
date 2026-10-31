@@ -175,6 +175,19 @@ Native on the Duo therefore splits at the fold only while partly folded; flat, i
 
 Not yet checked: interactions (opening the sidebar, rotation, folding with a collection open), and iOS 17/18 on iPad.
 
+### Adopted: system split view on iPhone, custom layout on iPad
+
+`AdaptiveLibraryView` now chooses its implementation once per launch with `AdaptiveLibraryEngine.resolve(idiom:arguments:)`: iPhone-family devices (including iPhone Duo, and iPhone apps running on iPad) use `NavigationSplitView`, exactly as Native Demo configures it (`NativeLibraryView`, now also compiled into Adaptive Demo); everything else uses the custom layout (`AdaptiveCustomLibraryView`). Debug-only `--force-custom-layout` and `--force-system-split` override the choice for comparisons. Tests cover the choice.
+
+Checked with `--select-collection=1`, cold launches, layout timeline and screenshots:
+
+- iPhone 18 Pro: Adaptive Demo identical to Native Demo (bar at `y = 62`), stable in 3 of 3.
+- iPhone Duo, flat: identical to Native Demo (sidebar starts hidden, bar at `y = 24`), stable in 3 of 3.
+- iPad, full screen: still the custom layout, stable in 3 of 3 (bars at `y = 96` from the first reading).
+- All 13 Adaptive tests pass on iOS 17.5.
+
+With this, the Duo-only issues found in the custom layout (the rail inset inside the sidebar, the flat-fold mismatch, the detail moving when the sidebar opens) no longer apply on shipping configurations; they matter only if the custom layout is forced onto a phone.
+
 ### iOS 17 support in the demos
 
 The demo apps now target iOS 17. `DemoRootView` uses the `Tab` API with the tab bar's bottom accessory and minimization on iOS 26 and later, and falls back to classic `.tabItem` tabs with the player bar in a bottom `safeAreaInset` on iOS 17–25. The Debug-only mirrored-background trial needs iOS 26 and does nothing earlier. Safe Area Explorer stays at iOS 26, since it diagnoses the iOS 26 tab bar. All apps and test targets build with the iOS 17 minimum.

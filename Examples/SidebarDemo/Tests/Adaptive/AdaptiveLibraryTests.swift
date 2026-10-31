@@ -1,6 +1,7 @@
 @testable import AdaptiveDemo
 import SwiftUI
 import Testing
+import UIKit
 
 struct AdaptiveLibraryModeTests {
     let metrics = AdaptiveLibraryMetrics()
@@ -39,6 +40,26 @@ struct AdaptiveLibraryModeTests {
     func debugOverrideNamesMatchEveryMode() {
         #expect(AdaptiveLibraryMode.allCases.map(\.rawValue) == ["side-by-side", "overlay", "stack"])
     }
+}
+
+struct AdaptiveLibraryEngineTests {
+    @Test
+    func phonesUseTheSystemSplitView() {
+        #expect(AdaptiveLibraryEngine.resolve(idiom: .phone, arguments: []) == .system)
+    }
+
+    @Test(arguments: [UIUserInterfaceIdiom.pad, .mac, .unspecified])
+    func otherDevicesUseTheCustomLayout(idiom: UIUserInterfaceIdiom) {
+        #expect(AdaptiveLibraryEngine.resolve(idiom: idiom, arguments: []) == .custom)
+    }
+
+    #if DEBUG
+        @Test
+        func debugArgumentsCanForceEitherEngine() {
+            #expect(AdaptiveLibraryEngine.resolve(idiom: .phone, arguments: ["--force-custom-layout"]) == .custom)
+            #expect(AdaptiveLibraryEngine.resolve(idiom: .pad, arguments: ["--force-system-split"]) == .system)
+        }
+    #endif
 }
 
 @MainActor

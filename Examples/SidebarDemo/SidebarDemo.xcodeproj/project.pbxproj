@@ -19,6 +19,7 @@
 		6F5597375A46C8F0840BF0A0 /* SafeAreaExplorerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAB55748FBC1B81784EB4EDE /* SafeAreaExplorerApp.swift */; };
 		841ABA6CA955D0D7B9210BCF /* DemoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D951D0A3966A12921E55ECFB /* DemoModel.swift */; };
 		8768E34B9B331648C8CBBDB2 /* DemoContentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47D51B03F5012ECC27A5BD8 /* DemoContentViews.swift */; };
+		87FFC167DF302EC533FC13FD /* NativeLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E644C6648A763B68866EB75 /* NativeLibraryView.swift */; };
 		8EE81881393560CF68C7A4C8 /* NativeLayoutProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B432F9722679A367E8DE1D9 /* NativeLayoutProbe.swift */; };
 		9C4CD64A607D0DF069E92BAD /* DemoModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D951D0A3966A12921E55ECFB /* DemoModel.swift */; };
 		A92C3F78AD20F52FCBD25F66 /* AdaptiveLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C29F1A5D7D2A873525E2B70E /* AdaptiveLibraryView.swift */; };
@@ -377,6 +378,7 @@
 				C508484871293C1E73F01055 /* DemoModel.swift in Sources */,
 				653A4AC9F6F50A9485CB3768 /* DemoRootView.swift in Sources */,
 				C256B2DD4622354DC49AF199 /* NativeLayoutProbe.swift in Sources */,
+				87FFC167DF302EC533FC13FD /* NativeLibraryView.swift in Sources */,
 				24074CB02868CDC422588AA9 /* UIKitSplitExperiment.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
