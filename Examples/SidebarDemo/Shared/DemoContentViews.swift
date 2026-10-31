@@ -12,8 +12,8 @@ enum DemoLibraryPlacement: Equatable {
     /// placement puts it in the toolbar on iPad.
     case navigationStack
     /// The root of a single `NavigationStack` that also shows the detail.
-    /// Rows are `NavigationLink`s that push onto that stack, with no list
-    /// selection. Search matches `.navigationStack`.
+    /// Rows match `.navigationStack`, plus a chevron; the layout pushes the
+    /// selected collection. Search matches `.navigationStack`.
     case compactStack
 }
 
@@ -61,32 +61,21 @@ struct DemoLibraryBrowser: View {
             }
     }
 
-    @ViewBuilder
+    /// One `List` for every placement, so a layout that changes placement
+    /// keeps the same list and its scroll position. Only the rows differ.
     private var list: some View {
-        switch placement {
-        case .splitViewSidebar:
-            List(selection: selection) {
-                ForEach(model.filteredCollections) { collection in
+        List(selection: selection) {
+            ForEach(model.filteredCollections) { collection in
+                switch placement {
+                case .splitViewSidebar:
                     NavigationLink(value: collection.id) {
                         DemoCollectionRow(collection: collection)
                     }
-                }
-            }
-        case .navigationStack:
-            List(selection: selection) {
-                ForEach(model.filteredCollections) { collection in
-                    DemoCollectionRow(collection: collection)
+                case .navigationStack, .compactStack:
+                    // The same row in both custom placements, so switching
+                    // between them doesn't rebuild rows or move the list.
+                    DemoCollectionRow(collection: collection, showsChevron: placement == .compactStack)
                         .tag(collection.id)
-                }
-            }
-        case .compactStack:
-            // No selection binding: the pushed path is the only source of
-            // truth, so a tap can't both select and push.
-            List {
-                ForEach(model.filteredCollections) { collection in
-                    NavigationLink(value: collection.id) {
-                        DemoCollectionRow(collection: collection)
-                    }
                 }
             }
         }
@@ -111,6 +100,7 @@ struct DemoLibraryBrowser: View {
 
 private struct DemoCollectionRow: View {
     let collection: DemoCollection
+    var showsChevron = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -123,6 +113,14 @@ private struct DemoCollectionRow: View {
                 Text(collection.artist)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+            }
+            if showsChevron {
+                // Like a navigation link's indicator, for rows that push.
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.forward")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
             }
         }
         .padding(.vertical, 4)

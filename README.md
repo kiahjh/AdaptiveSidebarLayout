@@ -6,6 +6,10 @@ Native Demo uses native SwiftUI navigation with a scoped top-edge container fix,
 
 **Custom layout:** the **Adaptive Demo** scheme runs a separate app with the same content, tabs and accessory. Its Library tab uses plain navigation stacks instead of `NavigationSplitView` and adapts to the width it gets: side by side when wide (with a collapsible sidebar), a slide-over sidebar at medium widths, and a single stack on iPhone, folded Duo and narrow windows. In paired cold launches, its toolbars stayed in place from the first reading, while Native Demo's moved 64 points every time. See [the custom layout notes](Examples/SidebarDemo/CustomLayout.md).
 
+Open work is tracked in [TODO.md](TODO.md).
+
+**Compatibility goal:** the eventual package must support iOS/iPadOS 17 and later, and everything needs testing back to 17. The demo apps currently target iOS 26 because their shared tab shell uses newer tab APIs; see the notes for what an iOS 17 test shell needs.
+
 **Known stability failure:** subsequent manual testing found intermittent excessive top spacing on launch, sometimes persistent until resizing and sometimes briefly visible before correcting itself. The top-edge change addresses the measured background/dimming gap, but is **not a complete, validated layout solution**. See [the investigation record](Examples/SidebarDemo/BackgroundInvestigation.md#cold-launch-stability-failure-after-default-build).
 
 ## Run the native demo

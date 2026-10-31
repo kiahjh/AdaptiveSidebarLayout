@@ -89,6 +89,18 @@ Checked by cold launch and screenshot, with the layout timeline (no navigation b
 
 Not yet checked: live resizing between modes and its animation, rotation, the unfolded Duo, and real taps on the dimming and sidebar button in overlay mode. Combining `--show-sidebar` with `--select-collection` closes the overlay right away, because choosing a collection is meant to.
 
+### Step 3a: keeping the Library's place across modes
+
+Previously the stack mode built its own Library list, so entering or leaving it scrolled the list back to the top. Now all three modes share one structure: the Library's navigation stack is the sidebar in the column modes and is widened to become the whole Library in the stack mode. Only the detail column is added or removed. The list's rows are also identical in both custom placements (the stack mode adds a chevron), so switching doesn't rebuild them. Tapping a row selects it; in the stack mode the selection itself pushes the collection, through the shared `stackPath`.
+
+Checked on the iPad simulator with Debug-only `--scroll-library-to=12` and `--library-layout-schedule=stack,overlay,stack,side-by-side` (switches modes every 3 seconds): the list kept its place through every switch, apart from one row of movement on the first switch (Collection 12 at the top became Collection 11). That's probably because the jump straight to row 12 left the rows above unmeasured, so their heights were only estimates. Normal scrolling measures them; watch for any shift during manual testing. Before this change the list returned to the top.
+
+Checked on iPhone 18 Pro with real taps through Xcode's device-interaction tools: tapping a row pushes the collection; Back returns to the list with no row left highlighted; tapping the same row again pushes again. Swipe-back wasn't exercised.
+
+### The 10-point toolbar gap, explained
+
+On iPad, the floating tab bar needs room at the top. Apple's split view leaves a 54-point strip for it, so its toolbars start at 86 (full screen, 32-point status area). Ordinary content, including our side-by-side columns, gets the system's standard 64-point strip, so our toolbars start at 96. A single full-width stack puts the tab bar inside its own toolbar row, starting at 32. Matching 86 by subtracting a hard-coded 10 points would break this project's no-fixed-offset rule. The user wants to match native, carefully: find an approach that doesn't hard-code the difference, and test it with and without a `TabView`, with the tab bar at the bottom, and back to iOS 17. Tracked in [TODO.md](../../TODO.md).
+
 ### Visible differences to address later
 
 - The custom toolbars sit `10` points lower than the native settled position (`96` vs `86`).
@@ -99,9 +111,10 @@ Row selection by tapping works (confirmed manually by the user).
 
 ## Next steps
 
-1. **Manual review of step 2b:** live resizing between modes, rotation, the unfolded Duo, and overlay taps.
-2. **Polish:** sidebar surface, animations, keyboard, keeping the sidebar's scroll position when entering or leaving the stack mode, and accessibility.
+1. **Manual review of step 2b:** live resizing between modes, rotation, the unfolded Duo, and overlay taps. iPhone and Duo still need testing and refinement.
+2. **Polish:** sidebar surface (the component should accept any sidebar content, so this belongs to the content or an optional helper, not a forced style), animations, keyboard, and accessibility.
 3. **Package extraction** once the behavior is settled.
+4. **iOS 17 support.** The package must work on iOS/iPadOS 17 and later, and everything above has to be tested back to 17. The layout code itself uses only iOS 17-era APIs (`NavigationStack`, `GeometryReader`, `@Bindable`, two-value `onChange`, `.smooth` animation). The demo shell does not yet: `Tab` needs iOS 18, and `tabViewBottomAccessory` and `tabBarMinimizeBehavior` need iOS 26, so the demo's deployment target is 26. Testing on 17 needs a fallback shell (`.tabItem` tabs, and the player bar via `safeAreaInset`). iPadOS 17 also puts the tab bar at the bottom, so iPad behavior will differ. Installed simulators: iPhone 15 on iOS 17.5 and iPhone 16 Pro / SE on iOS 18.2; no iPad runtimes for 17 or 18 yet.
 
 Each step repeats this launch comparison.
 
@@ -109,4 +122,4 @@ Each step repeats this launch comparison.
 
 Launch either app with `--inspect-native-layout`. The probe writes `Documents/layout-timeline.txt` (one summary line per reading: seconds since process start, the selected tab's top safe inset, and every visible navigation bar's frame) and `Documents/native-layout.txt` (the latest full hierarchy). Readings happen on the probe's own layout changes and at fixed times during the first 8 seconds. The probe never changes layout.
 
-Add `--present-search` (Debug only, either app) to open Library search when it appears, or, in Adaptive Demo only (Debug): `--hide-sidebar` (side-by-side sidebar starts hidden), `--show-sidebar` (overlay sidebar starts shown), `--library-layout=side-by-side|overlay|stack` (force a mode regardless of width), and `--select-collection=N` (select collection N at launch). Timeline lines also include each large scroll view's offset and adjusted top inset.
+Add `--present-search` (Debug only, either app) to open Library search when it appears, or, in Adaptive Demo only (Debug): `--hide-sidebar` (side-by-side sidebar starts hidden), `--show-sidebar` (overlay sidebar starts shown), `--library-layout=side-by-side|overlay|stack` (force a mode regardless of width), `--library-layout-schedule=MODE,MODE,...` (switch to each mode in turn, 3 seconds apart), `--select-collection=N` (select collection N at launch), and `--scroll-library-to=N` (scroll the Library list to collection N at launch). Timeline lines also include each large scroll view's offset and adjusted top inset.
