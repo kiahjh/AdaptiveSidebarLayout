@@ -13,6 +13,7 @@
 		24074CB02868CDC422588AA9 /* UIKitSplitExperiment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A76183CA38B4B0D8B9B8DB6 /* UIKitSplitExperiment.swift */; };
 		2529971EF4DB420E9BF49778 /* DemoContentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47D51B03F5012ECC27A5BD8 /* DemoContentViews.swift */; };
 		259F0C3992B91C85FB5AA237 /* NativeSplitViewConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F55F65ADE8F9CCC30A89AE2 /* NativeSplitViewConfigurationTests.swift */; };
+		35D673C2D225A77C815D75F0 /* NativeLaunchCover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 587623A2EB11498D19EF5378 /* NativeLaunchCover.swift */; };
 		3812B371798D7E8D6F2057BA /* NativeLayoutProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B432F9722679A367E8DE1D9 /* NativeLayoutProbe.swift */; };
 		6178EF188AE1D15CA9D938A5 /* DemoModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F635818CA05EBB6C2595E8 /* DemoModelTests.swift */; };
 		653A4AC9F6F50A9485CB3768 /* DemoRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6881D06A56C8D2FAF3D37198 /* DemoRootView.swift */; };
@@ -66,6 +67,7 @@
 		447D06E799C91DF11ABD1FFB /* DemoTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		44DE531648F50827CEF98C9E /* NativeDemo.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NativeDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A76183CA38B4B0D8B9B8DB6 /* UIKitSplitExperiment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitSplitExperiment.swift; sourceTree = "<group>"; };
+		587623A2EB11498D19EF5378 /* NativeLaunchCover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeLaunchCover.swift; sourceTree = "<group>"; };
 		5895B3C7C93E5D63FB7183D6 /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
 		60744587FF5E86616B9EEADF /* NativeDemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeDemoApp.swift; sourceTree = "<group>"; };
 		6881D06A56C8D2FAF3D37198 /* DemoRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoRootView.swift; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 			children = (
 				94AF5DA3522EC653D1D3CD2C /* Info.plist */,
 				60744587FF5E86616B9EEADF /* NativeDemoApp.swift */,
+				587623A2EB11498D19EF5378 /* NativeLaunchCover.swift */,
 				7B432F9722679A367E8DE1D9 /* NativeLayoutProbe.swift */,
 				9E644C6648A763B68866EB75 /* NativeLibraryView.swift */,
 			);
@@ -413,6 +416,7 @@
 				841ABA6CA955D0D7B9210BCF /* DemoModel.swift in Sources */,
 				0338C74BEBD606B5C44EF731 /* DemoRootView.swift in Sources */,
 				E1535C04E526EB3623FFE6B9 /* NativeDemoApp.swift in Sources */,
+				35D673C2D225A77C815D75F0 /* NativeLaunchCover.swift in Sources */,
 				3812B371798D7E8D6F2057BA /* NativeLayoutProbe.swift in Sources */,
 				F6F5983A26A69452BFD2FF4B /* NativeLibraryView.swift in Sources */,
 			);

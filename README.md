@@ -4,13 +4,15 @@ An experiment in adaptive sidebar layouts that compose with native SwiftUI tabs 
 
 Native Demo uses native SwiftUI navigation with a scoped top-edge container fix, now enabled by default. The original inset behavior remains available as a debug-only comparison option.
 
-**Custom layout:** the **Adaptive Demo** scheme runs a separate app with the same content, tabs and accessory. On iPhone, including iPhone Duo, its Library uses the system `NavigationSplitView`, which is stable there and handles the Duo's fold. On iPad it uses a custom layout of plain navigation stacks that adapts to the width it gets: side by side when wide (with a collapsible sidebar), a slide-over sidebar at medium widths, and a single stack in narrow windows. In paired cold launches, its toolbars stayed in place from the first reading, while Native Demo's moved 64 points every time. See [the custom layout notes](Examples/SidebarDemo/CustomLayout.md).
+**Custom layout (parked):** the **Adaptive Demo** scheme runs a separate app with the same content, tabs and accessory. On iPhone, including iPhone Duo, its Library uses the system `NavigationSplitView`, which is stable there and handles the Duo's fold. On iPad it uses a custom layout of plain navigation stacks that adapts to the width it gets: side by side when wide (with a collapsible sidebar), a slide-over sidebar at medium widths, and a single stack in narrow windows. In paired cold launches, its toolbars stayed in place from the first reading, while Native Demo's moved 64 points every time. See [the custom layout notes](Examples/SidebarDemo/CustomLayout.md).
 
 Open work is tracked in [TODO.md](TODO.md).
 
 **Compatibility goal:** the eventual package must support iOS/iPadOS 17 and later, and everything needs testing back to 17. The demo apps target iOS 17: on iOS 26 and later they use the tab bar's bottom accessory for the player, and on earlier versions classic tabs with the player bar above them.
 
-**Known stability failure:** subsequent manual testing found intermittent excessive top spacing on launch, sometimes persistent until resizing and sometimes briefly visible before correcting itself. The top-edge change addresses the measured background/dimming gap, but is **not a complete, validated layout solution**. See [the investigation record](Examples/SidebarDemo/BackgroundInvestigation.md#cold-launch-stability-failure-after-default-build).
+**Decision (2026-11-01): use the native split view everywhere, with a launch cover on iPad.** Native Demo is the recommended setup. On iPad, the split view inside a `TabView` first lays out its toolbars one tab-bar height too low and corrects them about 0.1 s later. Native Demo covers the app with a plain view matching the launch screen until the toolbars stop moving, so the jump happens out of sight (hidden in 8 of 8 measured launches, adding about 0.2 s). iPhone and iPhone Duo don't jump and get no cover. The custom layout in Adaptive Demo is kept as a record of that exploration. Open checks are in [TODO.md](TODO.md).
+
+**Known limit:** manual testing once found a launch where the extra top spacing stayed until the window was resized. The cover doesn't fix that case; it would fade out onto it. It hasn't been reproduced since. See [the investigation record](Examples/SidebarDemo/BackgroundInvestigation.md#cold-launch-stability-failure-after-default-build).
 
 ## Run the native demo
 

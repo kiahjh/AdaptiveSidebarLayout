@@ -15,6 +15,10 @@ struct NativeDemoApp: App {
                     }
                 #endif
             }
+            .modifier(NativeLaunchCover(mode: .resolve(
+                idiom: UIDevice.current.userInterfaceIdiom,
+                arguments: ProcessInfo.processInfo.arguments
+            )))
         }
     }
 }

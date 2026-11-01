@@ -42,6 +42,20 @@ struct DemoLibraryBrowser: View {
                 }
             }
             .toolbar {
+                // The field is hidden until the list is pulled down, so offer
+                // a button too. Presenting search reveals and focuses it.
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Search", systemImage: "magnifyingglass") {
+                        isSearchPresented = true
+                    }
+                    .keyboardShortcut("f")
+                    .tint(.primary)
+                }
+                // In the system split view, let iOS place it: on iPhone Duo
+                // that's the rail, like Settings. Custom layouts keep it in
+                // the column's own bar (see `keepsHorizontalBar`).
+                .keepsHorizontalBar(placement != .splitViewSidebar)
+
                 if let isSidebarVisible, isSidebarVisible.wrappedValue {
                     ToolbarItem(placement: .topBarTrailing) {
                         DemoSidebarButton(isVisible: isSidebarVisible)
@@ -230,6 +244,9 @@ struct DemoCollectionDetail: View {
                         model.play(track)
                     } label: {
                         DemoTrackRow(track: track, isCurrent: model.currentTrack.id == track.id)
+                            // The plain style only hit-tests drawn content;
+                            // make the whole row tappable.
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Simulate playing \(track.title)")

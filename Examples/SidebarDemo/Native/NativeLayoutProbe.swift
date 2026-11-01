@@ -20,6 +20,21 @@
             /// Bounded on purpose: this records a launch timeline, not an ongoing poll.
             private static let sampleTimes: [Double] = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 5, 8]
             private static var timeline: [String] = []
+            /// Seconds since the process started, for timelines.
+            static func elapsed() -> String {
+                processStart.map { String(format: "%.3f", Date().timeIntervalSince($0)) } ?? "?"
+            }
+
+            /// Appends a line to a file in Documents.
+            static func record(_ line: String, to filename: String) {
+                guard let directory = try? FileManager.default.url(
+                    for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true
+                ) else { return }
+                let url = directory.appendingPathComponent(filename)
+                let existing = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+                write(existing + line + "\n", to: filename)
+            }
+
             private static let processStart: Date? = {
                 var info = kinfo_proc()
                 var size = MemoryLayout<kinfo_proc>.stride

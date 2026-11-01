@@ -1,5 +1,6 @@
 @testable import NativeDemo
 import Testing
+import UIKit
 
 struct NativeSplitViewConfigurationTests {
     @Test
@@ -49,6 +50,27 @@ struct NativeSplitViewConfigurationTests {
                 extendsContainerToTop: false,
                 arguments: ["--extend-split-to-top", "--extend-split-background"]
             ) == .topExtended)
+        }
+    #endif
+}
+
+struct NativeLaunchCoverTests {
+    @Test
+    func iPadGetsTheCoverUntilTheLayoutSettles() {
+        #expect(NativeLaunchCoverMode.resolve(idiom: .pad, arguments: []) == .untilSettled)
+    }
+
+    @Test(arguments: [UIUserInterfaceIdiom.phone, .mac, .unspecified])
+    func otherDevicesGetNoCover(idiom: UIUserInterfaceIdiom) {
+        #expect(NativeLaunchCoverMode.resolve(idiom: idiom, arguments: []) == nil)
+    }
+
+    #if DEBUG
+        @Test
+        func debugArgumentsOverrideTheDefault() {
+            #expect(NativeLaunchCoverMode.resolve(idiom: .pad, arguments: ["--no-launch-cover"]) == nil)
+            #expect(NativeLaunchCoverMode.resolve(idiom: .phone, arguments: ["--force-launch-cover"]) == .untilSettled)
+            #expect(NativeLaunchCoverMode.resolve(idiom: .phone, arguments: ["--launch-cover=0.3"]) == .fixed(seconds: 0.3))
         }
     #endif
 }

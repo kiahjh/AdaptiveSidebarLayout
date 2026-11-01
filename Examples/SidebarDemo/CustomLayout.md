@@ -188,6 +188,16 @@ Checked with `--select-collection=1`, cold launches, layout timeline and screens
 
 With this, the Duo-only issues found in the custom layout (the rail inset inside the sidebar, the flat-fold mismatch, the detail moving when the sidebar opens) no longer apply on shipping configurations; they matter only if the custom layout is forced onto a phone.
 
+### Experiment: launch cover over the native split view
+
+**Adopted (2026-11-01):** the native split view everywhere, with this cover on iPad only. The custom layout is parked. Debug flags: `--no-launch-cover`, `--force-launch-cover` (any device), `--launch-cover=0.3`.
+
+Instead of replacing the native split view on iPad, hide its launch-time jump. `NativeLaunchCover` (Native Demo) draws a plain view in the system background color, matching the empty `UILaunchScreen`, over the whole app. It watches the window's navigation bar frames and the selected tab's top inset every frame, and fades out (0.15 s) once they've held still for 0.15 s, or after 1 s at most. The layout underneath is untouched. `--launch-cover=0.3` uses a fixed time instead; `--no-launch-cover` turns it off.
+
+iPad, 5 cold launches (3 floating window, 2 full screen): the usual jump happened every time (toolbar `y = 128 → 64` windowed, `150 → 86` full screen, about 0.09 s after the first layout), and the cover lifted 0.12–0.14 s after the jump in all 5. The cover adds about 0.2 s before content shows.
+
+Limits: it hides the brief jump only. The intermittent launch that stays wrong until the window is resized would be revealed as it is, since it's also "still". A real launch screen can't be held longer: iOS removes it at the app's first frame.
+
 ### iOS 17 support in the demos
 
 The demo apps now target iOS 17. `DemoRootView` uses the `Tab` API with the tab bar's bottom accessory and minimization on iOS 26 and later, and falls back to classic `.tabItem` tabs with the player bar in a bottom `safeAreaInset` on iOS 17–25. The Debug-only mirrored-background trial needs iOS 26 and does nothing earlier. Safe Area Explorer stays at iOS 26, since it diagnoses the iOS 26 tab bar. All apps and test targets build with the iOS 17 minimum.
